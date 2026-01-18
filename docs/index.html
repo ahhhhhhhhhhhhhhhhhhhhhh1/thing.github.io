@@ -1,1079 +1,252 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Groq API Chat Interface</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        :root {
-            --primary: #4f46e5;
-            --primary-dark: #4338ca;
-            --secondary: #f9fafb;
-            --text: #1f2937;
-            --text-light: #6b7280;
-            --border: #e5e7eb;
-            --user-bg: #e0e7ff;
-            --ai-bg: #f3f4f6;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --error: #ef4444;
-        }
-
-        body {
-            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 900px;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            height: 90vh;
-        }
-
-        header {
-            background: var(--primary);
-            color: white;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo i {
-            font-size: 24px;
-        }
-
-        .logo h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-
-        .api-key-container {
-            display: flex;
-            gap: 10px;
-        }
-
-        .api-key-input {
-            padding: 8px 12px;
-            border-radius: 8px;
-            border: none;
-            width: 300px;
-            font-size: 0.9rem;
-        }
-
-        .chat-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .controls {
-            display: flex;
-            gap: 10px;
-            padding: 15px 20px;
-            border-bottom: 1px solid var(--border);
-            background: white;
-        }
-
-        .model-selector, .personality-selector {
-            flex: 1;
-            display: flex;
-            gap: 10px;
-        }
-
-        .selector-label {
-            display: flex;
-            align-items: center;
-            font-weight: 500;
-            color: var(--text);
-            min-width: 80px;
-        }
-
-        .selector-options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            flex: 1;
-        }
-
-        .model-btn, .personality-btn {
-            padding: 8px 12px;
-            background: #eef2ff;
-            border: 1px solid #c7d2fe;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-
-        .model-btn.active, .personality-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .personality-btn {
-            background: #f0fdf4;
-            border-color: #a7f3d0;
-        }
-
-        .personality-btn.active {
-            background: var(--success);
-        }
-
-        .personality-btn.custom {
-            background: #fffbeb;
-            border-color: #fbbf24;
-        }
-
-        .personality-btn.custom.active {
-            background: var(--warning);
-        }
-
-        .messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            background: var(--secondary);
-        }
-
-        .message {
-            max-width: 85%;
-            padding: 15px;
-            border-radius: 12px;
-            line-height: 1.5;
-            position: relative;
-        }
-
-        .user-message {
-            align-self: flex-end;
-            background: var(--user-bg);
-            border-bottom-right-radius: 0;
-        }
-
-        .ai-message {
-            align-self: flex-start;
-            background: var(--ai-bg);
-            border-bottom-left-radius: 0;
-        }
-
-        .message-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        .user-message .message-header {
-            color: var(--primary-dark);
-        }
-
-        .ai-message .message-header {
-            color: var(--primary);
-        }
-
-        .edit-controls {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            display: flex;
-            gap: 5px;
-        }
-
-        .edit-btn, .save-btn {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 4px 8px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .edit-btn:hover, .save-btn:hover {
-            background: #f3f4f6;
-        }
-
-        .editing .message-content {
-            border: 1px solid var(--primary);
-            padding: 10px;
-            border-radius: 8px;
-            min-height: 40px;
-        }
-
-        .input-area {
-            padding: 20px;
-            border-top: 1px solid var(--border);
-            background: white;
-        }
-
-        .input-container {
-            display: flex;
-            gap: 10px;
-        }
-
-        .message-input {
-            flex: 1;
-            padding: 15px;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            resize: none;
-            height: 60px;
-            font-size: 1rem;
-        }
-
-        .send-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            width: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .send-btn:hover {
-            background: var(--primary-dark);
-        }
-
-        .send-btn:disabled {
-            background: #9ca3af;
-            cursor: not-allowed;
-        }
-
-        .status {
-            padding: 10px 20px;
-            background: #f8fafc;
-            color: var(--text-light);
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border-top: 1px solid var(--border);
-        }
-
-        .status-indicator {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--success);
-        }
-
-        .status-indicator.connecting {
-            background: var(--warning);
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.4; }
-            100% { opacity: 1; }
-        }
-
-        .deprecated-notice {
-            background: #fef2f2;
-            color: #b91c1c;
-            padding: 10px;
-            border-radius: 8px;
-            margin: 10px 20px;
-            font-size: 0.9rem;
-            border-left: 4px solid var(--error);
-        }
-
-        .history-controls {
-            display: flex;
-            justify-content: space-between;
-            padding: 0 20px 15px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .history-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 15px;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .history-btn:hover {
-            background: var(--primary-dark);
-        }
-
-        .history-btn:disabled {
-            background: #d1d5db;
-            cursor: not-allowed;
-        }
-
-        .history-panel {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: white;
-            z-index: 10;
-            display: none;
-            flex-direction: column;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        .history-header {
-            background: var(--primary);
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 16px 16px 0 0;
-        }
-
-        .close-history {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-
-        .history-content {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .history-item {
-            padding: 15px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            margin-bottom: 10px;
-            cursor: pointer;
-        }
-
-        .history-item:hover {
-            background: #f9fafb;
-        }
-
-        .history-item .message-header {
-            margin-bottom: 5px;
-        }
-
-        .history-item .message-content {
-            font-size: 0.9rem;
-            color: var(--text-light);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .history-empty {
-            text-align: center;
-            color: var(--text-light);
-            padding: 40px;
-        }
-
-        .custom-personality-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 20;
-            display: none;
-        }
-
-        .custom-personality-content {
-            background: white;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 600px;
-            padding: 25px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        .custom-personality-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .custom-personality-header h2 {
-            color: var(--primary);
-            font-size: 1.5rem;
-        }
-
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--text-light);
-        }
-
-        .custom-personality-textarea {
-            width: 100%;
-            height: 150px;
-            padding: 15px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            resize: vertical;
-            font-family: inherit;
-            font-size: 1rem;
-            margin-bottom: 15px;
-        }
-
-        .custom-personality-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        .modal-btn {
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            border: none;
-        }
-
-        .cancel-btn {
-            background: #f3f4f6;
-            color: var(--text);
-        }
-
-        .save-btn-modal {
-            background: var(--primary);
-            color: white;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                height: 95vh;
-            }
-            
-            .api-key-input {
-                width: 200px;
-            }
-            
-            .message {
-                max-width: 90%;
-            }
-            
-            .controls {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .selector-options {
-                flex-wrap: wrap;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Groq API Chat Interface</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+/* ===== base ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+:root {
+    --primary: #4f46e5;
+    --primary-dark: #4338ca;
+    --secondary: #f9fafb;
+    --text: #1f2937;
+    --text-light: #6b7280;
+    --border: #e5e7eb;
+    --user-bg: #e0e7ff;
+    --ai-bg: #f3f4f6;
+    --success: #10b981;
+    --warning: #f59e0b;
+}
+
+body {
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* ===== layout ===== */
+.container {
+    width: 100%;
+    max-width: 900px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,.1);
+    display: flex;
+    flex-direction: column;
+    height: 90vh;
+    overflow: hidden;
+}
+
+header {
+    background: var(--primary);
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.api-key-input {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: none;
+    width: 300px;
+}
+
+/* ===== controls ===== */
+.controls {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 20px;
+}
+
+.selector-label {
+    font-weight: 500;
+    min-width: 80px;
+}
+
+.selector-options {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.model-btn, .personality-btn {
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid #c7d2fe;
+    background: #eef2ff;
+}
+
+.model-btn.active {
+    background: var(--primary);
+    color: white;
+}
+
+/* ===== messages ===== */
+.messages {
+    flex: 1;
+    padding: 20px;
+    background: var(--secondary);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.message {
+    max-width: 85%;
+    padding: 15px;
+    border-radius: 12px;
+}
+
+.user-message {
+    align-self: flex-end;
+    background: var(--user-bg);
+}
+
+.ai-message {
+    align-self: flex-start;
+    background: var(--ai-bg);
+}
+
+.message-header {
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+/* ===== input ===== */
+.input-area {
+    padding: 20px;
+    border-top: 1px solid var(--border);
+}
+
+.input-container {
+    display: flex;
+    gap: 10px;
+}
+
+.message-input {
+    flex: 1;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    resize: none;
+}
+
+.send-btn {
+    width: 50px;
+    border-radius: 12px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+/* ===== status ===== */
+.status {
+    padding: 10px 20px;
+    font-size: .9rem;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    border-top: 1px solid var(--border);
+}
+
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--success);
+}
+
+.status-indicator.connecting {
+    background: var(--warning);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    50% { opacity: .4; }
+}
+</style>
 </head>
+
 <body>
-    <div class="container">
-        <header>
-            <div class="logo">
-                <i class="fas fa-bolt"></i>
-                <h1>Groq API Chat</h1>
-            </div>
-            <div class="api-key-container">
-                <input type="password" class="api-key-input" id="api-key" placeholder="Enter your Groq API key" value="">
-            </div>
-        </header>
-        
-        <div class="deprecated-notice">
-            <i class="fas fa-exclamation-triangle"></i> 
-            <strong>Model Update Notice:</strong> The models llama3-70b-8192 and mixtral-8x7b-32768 have been deprecated. 
-            This app now uses the recommended replacement models.
-        </div>
-        
-        <div class="history-controls">
-            <button class="history-btn" id="show-history">Show History</button>
-            <button class="history-btn" id="clear-history" disabled>Clear History</button>
-        </div>
-        
-        <div class="chat-container">
-            <div class="controls">
-                <div class="model-selector">
-                    <div class="selector-label">Model:</div>
-                    <div class="selector-options">
-                        <button class="model-btn active" data-model="llama-3.3-70b-versatile">Llama 3.3 70B</button>
-                        <button class="model-btn" data-model="llama-3.1-8b-instant">Llama 3.1 8B</button>
-                        <button class="model-btn" data-model="qwen/qwen3-32b">Qwen 3 32B</button>
-                    </div>
-                </div>
-                
-                <div class="personality-selector">
-                    <div class="selector-label">Personality:</div>
-                    <div class="selector-options">
-                        <button class="personality-btn active" data-personality="helpful">Helpful</button>
-                        <button class="personality-btn" data-personality="creative">Creative</button>
-                        <button class="personality-btn" data-personality="professional">Professional</button>
-                        <button class="personality-btn" data-personality="funny">Funny</button>
-                        <button class="personality-btn custom" data-personality="custom">Custom</button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="messages" id="chat-messages">
-                <div class="message ai-message">
-                    <div class="message-header">
-                        <i class="fas fa-robot"></i>
-                        <span>AI Assistant</span>
-                    </div>
-                    <div class="message-content">
-                        Hello! I'm your AI assistant powered by Groq. How can I help you today? Note: I'm now using the updated Llama 3.3 70B model.
-                    </div>
-                </div>
-            </div>
-            
-            <div class="input-area">
-                <div class="input-container">
-                    <textarea class="message-input" id="user-input" placeholder="Type your message here..."></textarea>
-                    <button class="send-btn" id="send-btn">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="status">
-                <div class="status-indicator" id="status-indicator"></div>
-                <span id="status-text">Ready to chat</span>
-            </div>
-        </div>
-        
-        <div class="history-panel" id="history-panel">
-            <div class="history-header">
-                <h2>Conversation History</h2>
-                <button class="close-history" id="close-history">&times;</button>
-            </div>
-            <div class="history-content" id="history-content">
-                <div class="history-empty">No conversation history yet</div>
-            </div>
-        </div>
-        
-        <div class="custom-personality-modal" id="custom-personality-modal">
-            <div class="custom-personality-content">
-                <div class="custom-personality-header">
-                    <h2>Custom Personality</h2>
-                    <button class="close-modal" id="close-modal">&times;</button>
-                </div>
-                <textarea class="custom-personality-textarea" id="custom-personality-input" placeholder="Enter instructions for the AI personality..."></textarea>
-                <div class="custom-personality-actions">
-                    <button class="modal-btn cancel-btn" id="cancel-custom">Cancel</button>
-                    <button class="modal-btn save-btn-modal" id="save-custom">Save</button>
-                </div>
-            </div>
+<div class="container">
+
+<header>
+    <div class="logo">
+        <i class="fas fa-bolt"></i>
+        <h1>Groq API Chat</h1>
+    </div>
+    <input type="password" class="api-key-input" id="api-key" placeholder="Groq API key">
+</header>
+
+<div class="controls">
+    <div class="model-selector">
+        <div class="selector-label">Model:</div>
+        <div class="selector-options">
+            <button class="model-btn active" data-model="llama-3.3-70b-versatile">
+                Maverick (70B)
+            </button>
+            <button class="model-btn" data-model="llama-3.3-8b-instant">
+                Scout (8B)
+            </button>
+            <button class="model-btn" data-model="llama-3.2-90b-vision-preview">
+                Lancer (90B)
+            </button>
         </div>
     </div>
+</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const chatMessages = document.getElementById('chat-messages');
-            const userInput = document.getElementById('user-input');
-            const sendBtn = document.getElementById('send-btn');
-            const apiKeyInput = document.getElementById('api-key');
-            const statusText = document.getElementById('status-text');
-            const statusIndicator = document.getElementById('status-indicator');
-            const modelButtons = document.querySelectorAll('.model-btn');
-            const personalityButtons = document.querySelectorAll('.personality-btn');
-            const showHistoryBtn = document.getElementById('show-history');
-            const clearHistoryBtn = document.getElementById('clear-history');
-            const closeHistoryBtn = document.getElementById('close-history');
-            const historyPanel = document.getElementById('history-panel');
-            const historyContent = document.getElementById('history-content');
-            const customPersonalityModal = document.getElementById('custom-personality-modal');
-            const customPersonalityInput = document.getElementById('custom-personality-input');
-            const closeModalBtn = document.getElementById('close-modal');
-            const cancelCustomBtn = document.getElementById('cancel-custom');
-            const saveCustomBtn = document.getElementById('save-custom');
-            
-            let currentModel = 'llama-3.3-70b-versatile';
-            let currentPersonality = 'helpful';
-            let customPersonalityText = '';
-            let conversationHistory = [];
-            let currentConversationId = null;
-            
-            // Set up model selection
-            modelButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    modelButtons.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentModel = btn.dataset.model;
-                });
-            });
-            
-            // Set up personality selection
-            personalityButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    personalityButtons.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentPersonality = btn.dataset.personality;
-                    
-                    // If custom personality is selected, open modal
-                    if (currentPersonality === 'custom') {
-                        customPersonalityInput.value = customPersonalityText;
-                        customPersonalityModal.style.display = 'flex';
-                    }
-                });
-            });
-            
-            // Auto-resize textarea
-            userInput.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = (this.scrollHeight) + 'px';
-            });
-            
-            // Send message on Enter (without Shift)
-            userInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
-                }
-            });
-            
-            // Send button click
-            sendBtn.addEventListener('click', sendMessage);
-            
-            // Show history panel
-            showHistoryBtn.addEventListener('click', () => {
-                historyPanel.style.display = 'flex';
-                updateHistoryDisplay();
-            });
-            
-            // Close history panel
-            closeHistoryBtn.addEventListener('click', () => {
-                historyPanel.style.display = 'none';
-            });
-            
-            // Clear history
-            clearHistoryBtn.addEventListener('click', () => {
-                if (confirm('Are you sure you want to clear all conversation history?')) {
-                    localStorage.removeItem('groqChatHistory');
-                    conversationHistory = [];
-                    updateHistoryDisplay();
-                    clearHistoryBtn.disabled = true;
-                }
-            });
-            
-            // Close custom personality modal
-            closeModalBtn.addEventListener('click', () => {
-                customPersonalityModal.style.display = 'none';
-                // Reset to previous personality if custom was cancelled
-                if (currentPersonality === 'custom' && !customPersonalityText) {
-                    personalityButtons[0].click();
-                }
-            });
-            
-            cancelCustomBtn.addEventListener('click', () => {
-                customPersonalityModal.style.display = 'none';
-                // Reset to previous personality if custom was cancelled
-                if (currentPersonality === 'custom' && !customPersonalityText) {
-                    personalityButtons[0].click();
-                }
-            });
-            
-            // Save custom personality
-            saveCustomBtn.addEventListener('click', () => {
-                customPersonalityText = customPersonalityInput.value.trim();
-                customPersonalityModal.style.display = 'none';
-            });
-            
-            // Function to send message
-            function sendMessage() {
-                const message = userInput.value.trim();
-                if (!message) return;
-                
-                // Add user message to chat
-                const userMessageId = addMessage(message, 'user');
-                userInput.value = '';
-                userInput.style.height = 'auto';
-                
-                // Update status
-                statusText.textContent = 'AI is thinking...';
-                statusIndicator.classList.add('connecting');
-                
-                // Get API key
-                const apiKey = apiKeyInput.value.trim();
-                if (!apiKey) {
-                    statusText.textContent = 'Please enter your API key';
-                    statusIndicator.classList.remove('connecting');
-                    return;
-                }
-                
-                // Add to conversation history
-                conversationHistory.push({ 
-                    role: 'user', 
-                    content: message,
-                    id: userMessageId
-                });
-                
-                // Call Groq API
-                callGroqAPI(message, apiKey, userMessageId);
-            }
-            
-            // Function to add message to chat
-            function addMessage(content, sender) {
-                const messageDiv = document.createElement('div');
-                messageDiv.classList.add('message');
-                messageDiv.classList.add(sender === 'user' ? 'user-message' : 'ai-message');
-                
-                // Generate a unique ID for the message
-                const messageId = 'msg-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
-                messageDiv.id = messageId;
-                
-                const headerDiv = document.createElement('div');
-                headerDiv.classList.add('message-header');
-                
-                if (sender === 'user') {
-                    headerDiv.innerHTML = '<i class="fas fa-user"></i><span>You</span>';
-                } else {
-                    headerDiv.innerHTML = '<i class="fas fa-robot"></i><span>AI Assistant</span>';
-                }
-                
-                // Add edit controls for both user and AI messages
-                if (sender === 'user' || sender === 'ai') {
-                    const editControls = document.createElement('div');
-                    editControls.classList.add('edit-controls');
-                    
-                    const editBtn = document.createElement('button');
-                    editBtn.classList.add('edit-btn');
-                    editBtn.innerHTML = '<i class="fas fa-edit"></i> Edit';
-                    editBtn.addEventListener('click', () => toggleEdit(messageDiv));
-                    
-                    const saveBtn = document.createElement('button');
-                    saveBtn.classList.add('save-btn');
-                    saveBtn.innerHTML = '<i class="fas fa-save"></i> Save';
-                    saveBtn.style.display = 'none';
-                    saveBtn.addEventListener('click', () => saveEdits(messageDiv));
-                    
-                    editControls.appendChild(editBtn);
-                    editControls.appendChild(saveBtn);
-                    messageDiv.appendChild(editControls);
-                }
-                
-                const contentDiv = document.createElement('div');
-                contentDiv.classList.add('message-content');
-                contentDiv.textContent = content;
-                
-                messageDiv.appendChild(headerDiv);
-                messageDiv.appendChild(contentDiv);
-                
-                chatMessages.appendChild(messageDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-                
-                return messageId;
-            }
-            
-            // Function to get system prompt based on personality
-            function getSystemPrompt() {
-                switch(currentPersonality) {
-                    case 'creative':
-                        return "You are a creative assistant. Provide imaginative and original responses. Think outside the box and encourage creative thinking.";
-                    case 'professional':
-                        return "You are a professional assistant. Provide formal, concise, and well-structured responses. Maintain a business-appropriate tone.";
-                    case 'funny':
-                        return "You are a funny assistant. Provide humorous and entertaining responses. Use puns, jokes, and witty remarks when appropriate.";
-                    case 'custom':
-                        return customPersonalityText || "You are a helpful assistant. Provide clear, accurate, and helpful responses to the user's questions.";
-                    case 'helpful':
-                    default:
-                        return "You are a helpful assistant. Provide clear, accurate, and helpful responses to the user's questions.";
-                }
-            }
-            
-            // Function to call Groq API
-            async function callGroqAPI(message, apiKey, userMessageId) {
-                try {
-                    const systemPrompt = getSystemPrompt();
-                    
-                    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${apiKey}`
-                        },
-                        body: JSON.stringify({
-                            model: currentModel,
-                            messages: [
-                                { role: "system", content: systemPrompt },
-                                ...conversationHistory.map(msg => ({
-                                    role: msg.role,
-                                    content: msg.content
-                                }))
-                            ],
-                            temperature: 0.7,
-                            max_tokens: 1024,
-                            top_p: 1,
-                            stream: false
-                        })
-                    });
-                    
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(`API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
-                    }
-                    
-                    const data = await response.json();
-                    const aiResponse = data.choices[0].message.content;
-                    
-                    // Add AI response to chat
-                    const aiMessageId = addMessage(aiResponse, 'ai');
-                    
-                    // Add to conversation history
-                    conversationHistory.push({ 
-                        role: 'assistant', 
-                        content: aiResponse,
-                        id: aiMessageId
-                    });
-                    
-                    // Save conversation history to localStorage
-                    saveConversationHistory();
-                    
-                    statusText.textContent = 'Ready to chat';
-                    statusIndicator.classList.remove('connecting');
-                } catch (error) {
-                    console.error('Error calling Groq API:', error);
-                    statusText.textContent = `Error: ${error.message}`;
-                    statusIndicator.classList.remove('connecting');
-                    
-                    // Add error message to chat
-                    const errorDiv = document.createElement('div');
-                    errorDiv.classList.add('message', 'ai-message');
-                    errorDiv.innerHTML = `
-                        <div class="message-header">
-                            <i class="fas fa-robot"></i>
-                            <span>AI Assistant</span>
-                        </div>
-                        <div class="message-content">
-                            Sorry, I encountered an error: ${error.message}
-                        </div>
-                    `;
-                    chatMessages.appendChild(errorDiv);
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                }
-            }
-            
-            // Function to toggle edit mode
-            function toggleEdit(messageDiv) {
-                const contentDiv = messageDiv.querySelector('.message-content');
-                const editBtn = messageDiv.querySelector('.edit-btn');
-                const saveBtn = messageDiv.querySelector('.save-btn');
-                
-                if (messageDiv.classList.contains('editing')) {
-                    // Exit edit mode
-                    messageDiv.classList.remove('editing');
-                    editBtn.style.display = 'flex';
-                    saveBtn.style.display = 'none';
-                } else {
-                    // Enter edit mode
-                    messageDiv.classList.add('editing');
-                    editBtn.style.display = 'none';
-                    saveBtn.style.display = 'flex';
-                    
-                    // Convert content to textarea
-                    const textContent = contentDiv.textContent;
-                    const textarea = document.createElement('textarea');
-                    textarea.value = textContent;
-                    textarea.classList.add('message-content');
-                    textarea.style.width = '100%';
-                    textarea.style.minHeight = '100px';
-                    textarea.style.padding = '10px';
-                    textarea.style.border = '1px solid var(--primary)';
-                    textarea.style.borderRadius = '8px';
-                    textarea.style.fontFamily = 'inherit';
-                    textarea.style.fontSize = '1rem';
-                    textarea.style.lineHeight = '1.5';
-                    
-                    contentDiv.parentNode.replaceChild(textarea, contentDiv);
-                }
-            }
-            
-            // Function to save edits
-            function saveEdits(messageDiv) {
-                const textarea = messageDiv.querySelector('.message-content');
-                const newContent = textarea.value;
-                
-                // Convert back to div
-                const contentDiv = document.createElement('div');
-                contentDiv.classList.add('message-content');
-                contentDiv.textContent = newContent;
-                
-                textarea.parentNode.replaceChild(contentDiv, textarea);
-                
-                // Exit edit mode
-                messageDiv.classList.remove('editing');
-                const editBtn = messageDiv.querySelector('.edit-btn');
-                const saveBtn = messageDiv.querySelector('.save-btn');
-                editBtn.style.display = 'flex';
-                saveBtn.style.display = 'none';
-                
-                // Update conversation history with the edited content
-                const messageId = messageDiv.id;
-                
-                // Find the message in conversation history and update it
-                for (let i = 0; i < conversationHistory.length; i++) {
-                    if (conversationHistory[i].id === messageId) {
-                        conversationHistory[i].content = newContent;
-                        break;
-                    }
-                }
-                
-                // Save updated history
-                saveConversationHistory();
-            }
-            
-            // Function to save conversation history to localStorage
-            function saveConversationHistory() {
-                if (conversationHistory.length > 0) {
-                    // Create a new conversation object
-                    const conversation = {
-                        id: Date.now(),
-                        timestamp: new Date().toISOString(),
-                        model: currentModel,
-                        personality: currentPersonality,
-                        customPersonality: currentPersonality === 'custom' ? customPersonalityText : null,
-                        messages: conversationHistory.map(msg => ({
-                            role: msg.role,
-                            content: msg.content
-                        }))
-                    };
-                    
-                    // Load existing history
-                    let storedHistory = JSON.parse(localStorage.getItem('groqChatHistory')) || [];
-                    
-                    // Add new conversation
-                    storedHistory.push(conversation);
-                    
-                    // Keep only the last 10 conversations
-                    if (storedHistory.length > 10) {
-                        storedHistory = storedHistory.slice(-10);
-                    }
-                    
-                    // Save back to localStorage
-                    localStorage.setItem('groqChatHistory', JSON.stringify(storedHistory));
-                    
-                    // Enable clear button if we have history
-                    clearHistoryBtn.disabled = storedHistory.length === 0;
-                }
-            }
-            
-            // Function to update history display
-            function updateHistoryDisplay() {
-                const storedHistory = JSON.parse(localStorage.getItem('groqChatHistory')) || [];
-                
-                if (storedHistory.length === 0) {
-                    historyContent.innerHTML = '<div class="history-empty">No conversation history yet</div>';
-                    return;
-                }
-                
-                historyContent.innerHTML = '';
-                
-                storedHistory.forEach((conv, index) => {
-                    const convItem = document.createElement('div');
-                    convItem.classList.add('history-item');
-                    
-                    const date = new Date(conv.timestamp).toLocaleString();
-                    const firstMessage = conv.messages[0]?.content.substring(0, 60) + '...';
-                    const personalityDisplay = conv.personality === 'custom' ? 
-                        (conv.customPersonality ? 'Custom' : 'Custom (empty)') : 
-                        conv.personality;
-                    
-                    convItem.innerHTML = `
-                        <div class="message-header">
-                            <i class="fas fa-comments"></i>
-                            <span>Conversation ${storedHistory.length - index}</span>
-                        </div>
-                        <div class="message-content">${firstMessage}</div>
-                        <div style="font-size: 0.8rem; color: ${--text-light}; margin-top: 5px;">
-                            ${date} | ${conv.model} | ${personalityDisplay}
-                        </div>
-                    `;
-                    
-                    convItem.addEventListener('click', () => {
-                        // Load this conversation
-                        conversationHistory = conv.messages.map((msg, idx) => ({
-                            ...msg,
-                            id: 'msg-' + Date.now() + '-' + idx // Generate new IDs for loaded messages
-                        }));
-                        
-                        // Set the model and personality
-                        currentModel = conv.model;
-                        currentPersonality = conv.personality;
-                        if (currentPersonality === 'custom') {
-                            customPersonalityText = conv.customPersonality || '';
-                        }
-                        
-                        // Update UI
-                        modelButtons.forEach(btn => {
-                            btn.classList.toggle('active', btn.dataset.model === currentModel);
-                        });
-                        
-                        personalityButtons.forEach(btn => {
-                            btn.classList.toggle('active', btn.dataset.personality === currentPersonality);
-                        });
-                        
-                        chatMessages.innerHTML = '';
-                        
-                        conv.messages.forEach(msg => {
-                            addMessage(msg.content, msg.role === 'user' ? 'user' : 'ai');
-                        });
-                        
-                        historyPanel.style.display = 'none';
-                    });
-                    
-                    historyContent.appendChild(convItem);
-                });
-            }
-            
-            // Load conversation history from localStorage on startup
-            const storedHistory = JSON.parse(localStorage.getItem('groqChatHistory')) || [];
-            if (storedHistory.length > 0) {
-                clearHistoryBtn.disabled = false;
-            }
-        });
-    </script>
-</body>
-</html>
+<div class="messages" id="chat-messages">
+    <div class="message ai-message">
+        <div class="message-header">
+            <i class="fas fa-robot"></i> AI Assistant
+        </div>
+        <div class="message-content">
+            Ready when you are.
+        </div>
+    </div>
+</div>
+
+<div class="input-area">
+    <div class="input-container">
+        <textarea class="message-input" id="user-input" placeholder="Type here..."></textarea>
+        <button class="send-btn" id="send-btn">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+
+<div class="status">
+    <div class="status-indicator" id="status-indicator"></div>
+    <span id="status-text">Idle</span>
+</div>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    con
