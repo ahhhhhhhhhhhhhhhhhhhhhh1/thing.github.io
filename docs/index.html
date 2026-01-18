@@ -15,11 +15,11 @@ button{cursor:pointer}
 .btn{padding:6px 10px;border-radius:6px;border:1px solid #c7d2fe;background:#eef2ff}
 .btn.active{background:#4f46e5;color:#fff}
 .messages{flex:1;overflow-y:auto;padding:16px;background:#f9fafb;display:flex;flex-direction:column;gap:12px}
-.msg{max-width:85%;padding:10px;border-radius:10px;position:relative}
+.msg{max-width:85%;padding:10px;border-radius:10px;position:relative;white-space:pre-wrap}
 .user{align-self:flex-end;background:#e0e7ff}
 .ai{align-self:flex-start;background:#f3f4f6}
-.msg-tools{position:absolute;top:6px;right:6px;font-size:.8rem;opacity:.6}
-.msg-tools i{margin-left:6px;cursor:pointer}
+.msg-tools{position:absolute;top:6px;right:8px;font-size:.8rem;opacity:.6}
+.msg-tools i{margin-left:8px;cursor:pointer}
 .input{border-top:1px solid #ddd;padding:12px;display:flex;gap:10px}
 textarea{flex:1;resize:none;padding:10px;border-radius:8px;border:1px solid #ccc}
 .status{padding:8px 12px;font-size:.85rem;border-top:1px solid #ddd}
@@ -56,7 +56,7 @@ textarea{flex:1;resize:none;padding:10px;border-radius:8px;border:1px solid #ccc
 <div id="customBox" class="controls hidden">
   <strong>Custom system prompt</strong>
   <textarea id="customPrompt" rows="3"
-    placeholder="e.g. You are blunt, technical, and never over-explain."></textarea>
+    placeholder="You are blunt, technical, and never over-explain."></textarea>
 </div>
 
 <div class="messages" id="chat"></div>
@@ -87,33 +87,37 @@ const presets={
   helpful:'You are a helpful, clear assistant.',
   creative:'You are imaginative and expressive.',
   professional:'You are concise and technical.',
-  funny:'You are sarcastic but useful.'
+  funny:'You are sarcastic but still useful.'
 };
+
+function rerender(){
+  chat.innerHTML='';
+  history.slice(1).forEach((m,i)=>renderMsg(m.content,m.role,i));
+}
 
 function renderMsg(text,role,index){
   const d=document.createElement('div');
   d.className=`msg ${role}`;
   d.innerHTML=`
-    ${role==='user'?`
-      <div class="msg-tools">
-        <i class="fas fa-pen" title="Edit"></i>
-      </div>`:''}
+    <div class="msg-tools">
+      <i class="fas fa-pen" title="Edit"></i>
+    </div>
     <div>${text}</div>`;
-  if(role==='user'){
-    d.querySelector('i').onclick=()=>{
-      input.value=text;
-      history.splice(index+1);
-      chat.innerHTML='';
-      history.forEach((m,i)=>i&&renderMsg(m.content,m.role,i-1));
-    };
-  }
+  d.querySelector('i').onclick=()=>{
+    input.value=text;
+    history.splice(index+1);
+    rerender();
+  };
   chat.appendChild(d);
   chat.scrollTop=chat.scrollHeight;
 }
 
 document.querySelectorAll('.model').forEach(b=>{
-  b.onclick=()=>{document.querySelectorAll('.model').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');model=b.dataset.m;};
+  b.onclick=()=>{
+    document.querySelectorAll('.model').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    model=b.dataset.m;
+  };
 });
 
 document.querySelectorAll('.pers').forEach(b=>{
@@ -141,6 +145,10 @@ input.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg(
 
 async function sendMsg(){
   if(!input.value.trim()||!apiKey.value)return;
+
+  // auto-hide custom box after send
+  customBox.classList.add('hidden');
+
   const text=input.value.trim();
   renderMsg(text,'user',history.length-1);
   history.push({role:'user',content:text});
@@ -155,9 +163,10 @@ async function sendMsg(){
     },
     body:JSON.stringify({model,messages:history,max_tokens:1024})
   });
+
   const j=await r.json();
   const reply=j.choices[0].message.content;
-  renderMsg(reply,'ai');
+  renderMsg(reply,'ai',history.length-1);
   history.push({role:'assistant',content:reply});
   status.textContent='Ready';
 }
