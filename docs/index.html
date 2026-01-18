@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-/* ===== base ===== */
 * {
     margin: 0;
     padding: 0;
@@ -26,6 +25,7 @@
     --ai-bg: #f3f4f6;
     --success: #10b981;
     --warning: #f59e0b;
+    --error: #ef4444;
 }
 
 body {
@@ -37,17 +37,16 @@ body {
     padding: 20px;
 }
 
-/* ===== layout ===== */
 .container {
     width: 100%;
     max-width: 900px;
     background: white;
     border-radius: 16px;
     box-shadow: 0 10px 25px rgba(0,0,0,.1);
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     height: 90vh;
-    overflow: hidden;
 }
 
 header {
@@ -55,14 +54,14 @@ header {
     color: white;
     padding: 20px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
 }
 
 .logo {
     display: flex;
-    gap: 12px;
     align-items: center;
+    gap: 12px;
 }
 
 .api-key-input {
@@ -72,15 +71,16 @@ header {
     width: 300px;
 }
 
-/* ===== controls ===== */
 .controls {
+    display: flex;
+    gap: 10px;
     padding: 15px 20px;
     border-bottom: 1px solid var(--border);
-    display: flex;
-    gap: 20px;
 }
 
 .selector-label {
+    display: flex;
+    align-items: center;
     font-weight: 500;
     min-width: 80px;
 }
@@ -93,10 +93,11 @@ header {
 
 .model-btn, .personality-btn {
     padding: 8px 12px;
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
     border-radius: 8px;
     cursor: pointer;
-    border: 1px solid #c7d2fe;
-    background: #eef2ff;
+    font-size: .9rem;
 }
 
 .model-btn.active {
@@ -104,21 +105,27 @@ header {
     color: white;
 }
 
-/* ===== messages ===== */
+.personality-btn.active {
+    background: var(--success);
+    color: white;
+}
+
 .messages {
     flex: 1;
     padding: 20px;
-    background: var(--secondary);
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 20px;
+    background: var(--secondary);
 }
 
 .message {
     max-width: 85%;
     padding: 15px;
     border-radius: 12px;
+    line-height: 1.5;
+    position: relative;
 }
 
 .user-message {
@@ -136,7 +143,6 @@ header {
     margin-bottom: 8px;
 }
 
-/* ===== input ===== */
 .input-area {
     padding: 20px;
     border-top: 1px solid var(--border);
@@ -156,21 +162,22 @@ header {
 }
 
 .send-btn {
-    width: 50px;
-    border-radius: 12px;
     background: var(--primary);
     color: white;
     border: none;
+    border-radius: 12px;
+    width: 50px;
     cursor: pointer;
 }
 
-/* ===== status ===== */
 .status {
     padding: 10px 20px;
+    background: #f8fafc;
+    color: var(--text-light);
     font-size: .9rem;
     display: flex;
-    gap: 8px;
     align-items: center;
+    gap: 8px;
     border-top: 1px solid var(--border);
 }
 
@@ -200,7 +207,8 @@ header {
         <i class="fas fa-bolt"></i>
         <h1>Groq API Chat</h1>
     </div>
-    <input type="password" class="api-key-input" id="api-key" placeholder="Groq API key">
+    <input type="password" class="api-key-input" id="api-key"
+           placeholder="Enter your Groq API key">
 </header>
 
 <div class="controls">
@@ -218,6 +226,16 @@ header {
             </button>
         </div>
     </div>
+
+    <div class="personality-selector">
+        <div class="selector-label">Personality:</div>
+        <div class="selector-options">
+            <button class="personality-btn active" data-personality="helpful">Helpful</button>
+            <button class="personality-btn" data-personality="creative">Creative</button>
+            <button class="personality-btn" data-personality="professional">Professional</button>
+            <button class="personality-btn" data-personality="funny">Funny</button>
+        </div>
+    </div>
 </div>
 
 <div class="messages" id="chat-messages">
@@ -233,7 +251,8 @@ header {
 
 <div class="input-area">
     <div class="input-container">
-        <textarea class="message-input" id="user-input" placeholder="Type here..."></textarea>
+        <textarea class="message-input" id="user-input"
+                  placeholder="Type your message here..."></textarea>
         <button class="send-btn" id="send-btn">
             <i class="fas fa-paper-plane"></i>
         </button>
@@ -242,7 +261,7 @@ header {
 
 <div class="status">
     <div class="status-indicator" id="status-indicator"></div>
-    <span id="status-text">Idle</span>
+    <span id="status-text">Ready</span>
 </div>
 
 </div>
@@ -269,7 +288,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     sendBtn.onclick = sendMessage;
-
     input.addEventListener('keydown', e => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -326,9 +344,8 @@ document.addEventListener('DOMContentLoaded', () => {
             addMessage(reply, 'ai');
             history.push({ role: 'assistant', content: reply });
 
-            statusText.textContent = 'Idle';
+            statusText.textContent = 'Ready';
             statusIndicator.classList.remove('connecting');
-
         } catch (err) {
             addMessage(err.message, 'ai');
             statusText.textContent = 'Error';
