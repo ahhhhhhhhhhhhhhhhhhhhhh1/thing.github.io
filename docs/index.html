@@ -90,26 +90,29 @@ const presets={
   funny:'You are sarcastic but still useful.'
 };
 
-function rerender(){
+function render(){
   chat.innerHTML='';
-  history.slice(1).forEach((m,i)=>renderMsg(m.content,m.role,i));
+  history.slice(1).forEach((m, idx)=>{
+    const d=document.createElement('div');
+    d.className=`msg ${m.role}`;
+    d.dataset.idx=idx+1;
+    d.innerHTML=`
+      <div class="msg-tools">
+        <i class="fas fa-pen" title="Edit"></i>
+      </div>
+      <div class="content">${m.content}</div>`;
+    d.querySelector('i').onclick=()=>editMessage(idx+1);
+    chat.appendChild(d);
+  });
+  chat.scrollTop=chat.scrollHeight;
 }
 
-function renderMsg(text,role,index){
-  const d=document.createElement('div');
-  d.className=`msg ${role}`;
-  d.innerHTML=`
-    <div class="msg-tools">
-      <i class="fas fa-pen" title="Edit"></i>
-    </div>
-    <div>${text}</div>`;
-  d.querySelector('i').onclick=()=>{
-    input.value=text;
-    history.splice(index+1);
-    rerender();
-  };
-  chat.appendChild(d);
-  chat.scrollTop=chat.scrollHeight;
+function editMessage(historyIndex){
+  const msg=history[historyIndex];
+  const newText=prompt("Edit message:", msg.content);
+  if(newText===null) return;
+  history[historyIndex].content=newText;
+  render();
 }
 
 document.querySelectorAll('.model').forEach(b=>{
@@ -124,6 +127,7 @@ document.querySelectorAll('.pers').forEach(b=>{
   b.onclick=()=>{
     document.querySelectorAll('.pers').forEach(x=>x.classList.remove('active'));
     b.classList.add('active');
+
     if(b.dataset.p==='custom'){
       customBox.classList.remove('hidden');
       systemPrompt=customPrompt.value||'You are a custom assistant.';
@@ -141,17 +145,16 @@ customPrompt.oninput=()=>{
 };
 
 send.onclick=sendMsg;
-input.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}};
+input.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey'){e.preventDefault();sendMsg();}};
 
 async function sendMsg(){
-  if(!input.value.trim()||!apiKey.value)return;
+  const text=input.value.trim();
+  if(!text || !apiKey.value.trim()) return;
 
-  // auto-hide custom box after send
   customBox.classList.add('hidden');
 
-  const text=input.value.trim();
-  renderMsg(text,'user',history.length-1);
   history.push({role:'user',content:text});
+  render();
   input.value='';
   status.textContent='Thinking…';
 
@@ -161,13 +164,17 @@ async function sendMsg(){
       'Authorization':`Bearer ${apiKey.value}`,
       'Content-Type':'application/json'
     },
-    body:JSON.stringify({model,messages:history,max_tokens:1024})
+    body:JSON.stringify({
+      model,
+      messages:history,
+      max_tokens:1024
+    })
   });
 
   const j=await r.json();
   const reply=j.choices[0].message.content;
-  renderMsg(reply,'ai',history.length-1);
   history.push({role:'assistant',content:reply});
+  render();
   status.textContent='Ready';
 }
 </script>
