@@ -3,199 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Groq API Chat Interface</title>
+<title>Groq API Chat</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+*{margin:0;padding:0;box-sizing:border-box;font-family:Segoe UI,Tahoma,sans-serif}
+:root{
+--primary:#4f46e5;--secondary:#f9fafb;--border:#e5e7eb;
+--user-bg:#e0e7ff;--ai-bg:#f3f4f6;--success:#10b981;--warning:#f59e0b
 }
-
-:root {
-    --primary: #4f46e5;
-    --primary-dark: #4338ca;
-    --secondary: #f9fafb;
-    --text: #1f2937;
-    --text-light: #6b7280;
-    --border: #e5e7eb;
-    --user-bg: #e0e7ff;
-    --ai-bg: #f3f4f6;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --error: #ef4444;
-}
-
-body {
-    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
-
-.container {
-    width: 100%;
-    max-width: 900px;
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0,0,0,.1);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    height: 90vh;
-}
-
-header {
-    background: var(--primary);
-    color: white;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.api-key-input {
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: none;
-    width: 300px;
-}
-
-.controls {
-    display: flex;
-    gap: 10px;
-    padding: 15px 20px;
-    border-bottom: 1px solid var(--border);
-}
-
-.selector-label {
-    display: flex;
-    align-items: center;
-    font-weight: 500;
-    min-width: 80px;
-}
-
-.selector-options {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.model-btn, .personality-btn {
-    padding: 8px 12px;
-    background: #eef2ff;
-    border: 1px solid #c7d2fe;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: .9rem;
-}
-
-.model-btn.active {
-    background: var(--primary);
-    color: white;
-}
-
-.personality-btn.active {
-    background: var(--success);
-    color: white;
-}
-
-.messages {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    background: var(--secondary);
-}
-
-.message {
-    max-width: 85%;
-    padding: 15px;
-    border-radius: 12px;
-    line-height: 1.5;
-    position: relative;
-}
-
-.user-message {
-    align-self: flex-end;
-    background: var(--user-bg);
-}
-
-.ai-message {
-    align-self: flex-start;
-    background: var(--ai-bg);
-}
-
-.message-header {
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-.input-area {
-    padding: 20px;
-    border-top: 1px solid var(--border);
-}
-
-.input-container {
-    display: flex;
-    gap: 10px;
-}
-
-.message-input {
-    flex: 1;
-    padding: 15px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    resize: none;
-}
-
-.send-btn {
-    background: var(--primary);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    width: 50px;
-    cursor: pointer;
-}
-
-.status {
-    padding: 10px 20px;
-    background: #f8fafc;
-    color: var(--text-light);
-    font-size: .9rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border-top: 1px solid var(--border);
-}
-
-.status-indicator {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--success);
-}
-
-.status-indicator.connecting {
-    background: var(--warning);
-    animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-    50% { opacity: .4; }
-}
+body{background:linear-gradient(135deg,#f0f9ff,#e0f2fe);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}
+.container{width:100%;max-width:900px;height:90vh;background:#fff;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,.1);display:flex;flex-direction:column;overflow:hidden}
+header{background:var(--primary);color:#fff;padding:20px;display:flex;justify-content:space-between;align-items:center}
+.controls{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;gap:20px;flex-wrap:wrap}
+.selector-label{font-weight:600;margin-bottom:6px}
+.selector-options{display:flex;gap:8px;flex-wrap:wrap}
+.model-btn,.personality-btn{padding:8px 12px;border-radius:8px;border:1px solid #c7d2fe;background:#eef2ff;cursor:pointer}
+.model-btn.active{background:var(--primary);color:#fff}
+.personality-btn.active{background:var(--success);color:#fff}
+.messages{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;background:var(--secondary)}
+.message{max-width:85%;padding:14px;border-radius:12px}
+.user-message{align-self:flex-end;background:var(--user-bg)}
+.ai-message{align-self:flex-start;background:var(--ai-bg)}
+.message-header{font-weight:600;margin-bottom:6px}
+.input-area{padding:20px;border-top:1px solid var(--border)}
+.input-container{display:flex;gap:10px}
+textarea{flex:1;padding:14px;border-radius:12px;border:1px solid var(--border);resize:none}
+button.send{width:50px;border:none;border-radius:12px;background:var(--primary);color:#fff;cursor:pointer}
+.status{padding:10px 20px;border-top:1px solid var(--border);font-size:.9rem;display:flex;align-items:center;gap:8px}
+.indicator{width:10px;height:10px;border-radius:50%;background:var(--success)}
+.indicator.busy{background:var(--warning);animation:pulse 1.5s infinite}
+@keyframes pulse{50%{opacity:.4}}
 </style>
 </head>
 
@@ -203,156 +41,123 @@ header {
 <div class="container">
 
 <header>
-    <div class="logo">
-        <i class="fas fa-bolt"></i>
-        <h1>Groq API Chat</h1>
-    </div>
-    <input type="password" class="api-key-input" id="api-key"
-           placeholder="Enter your Groq API key">
+  <strong>Groq Chat</strong>
+  <input id="apiKey" type="password" placeholder="Groq API key" style="padding:8px;border-radius:8px;border:none;width:260px">
 </header>
 
 <div class="controls">
-    <div class="model-selector">
-        <div class="selector-label">Model:</div>
-        <div class="selector-options">
-            <button class="model-btn active" data-model="llama-3.3-70b-versatile">
-                Maverick (70B)
-            </button>
-            <button class="model-btn" data-model="llama-3.3-8b-instant">
-                Scout (8B)
-            </button>
-            <button class="model-btn" data-model="llama-3.2-90b-vision-preview">
-                Lancer (90B)
-            </button>
-        </div>
+  <div>
+    <div class="selector-label">Model</div>
+    <div class="selector-options">
+      <button class="model-btn active" data-model="llama-3.3-70b-versatile">Maverick</button>
+      <button class="model-btn" data-model="llama-3.3-8b-instant">Scout</button>
+      <button class="model-btn" data-model="llama-3.2-90b-vision-preview">Lancer</button>
     </div>
+  </div>
 
-    <div class="personality-selector">
-        <div class="selector-label">Personality:</div>
-        <div class="selector-options">
-            <button class="personality-btn active" data-personality="helpful">Helpful</button>
-            <button class="personality-btn" data-personality="creative">Creative</button>
-            <button class="personality-btn" data-personality="professional">Professional</button>
-            <button class="personality-btn" data-personality="funny">Funny</button>
-        </div>
+  <div>
+    <div class="selector-label">Personality</div>
+    <div class="selector-options">
+      <button class="personality-btn active" data-p="helpful">Helpful</button>
+      <button class="personality-btn" data-p="creative">Creative</button>
+      <button class="personality-btn" data-p="professional">Professional</button>
+      <button class="personality-btn" data-p="funny">Funny</button>
     </div>
+  </div>
 </div>
 
-<div class="messages" id="chat-messages">
-    <div class="message ai-message">
-        <div class="message-header">
-            <i class="fas fa-robot"></i> AI Assistant
-        </div>
-        <div class="message-content">
-            Ready when you are.
-        </div>
-    </div>
-</div>
+<div class="messages" id="chat"></div>
 
 <div class="input-area">
-    <div class="input-container">
-        <textarea class="message-input" id="user-input"
-                  placeholder="Type your message here..."></textarea>
-        <button class="send-btn" id="send-btn">
-            <i class="fas fa-paper-plane"></i>
-        </button>
-    </div>
+  <div class="input-container">
+    <textarea id="input" placeholder="Type…"></textarea>
+    <button class="send" id="send"><i class="fas fa-paper-plane"></i></button>
+  </div>
 </div>
 
 <div class="status">
-    <div class="status-indicator" id="status-indicator"></div>
-    <span id="status-text">Ready</span>
+  <div class="indicator" id="indicator"></div>
+  <span id="status">Ready</span>
 </div>
 
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const chat = document.getElementById('chat-messages');
-    const input = document.getElementById('user-input');
-    const sendBtn = document.getElementById('send-btn');
-    const apiKeyInput = document.getElementById('api-key');
-    const statusText = document.getElementById('status-text');
-    const statusIndicator = document.getElementById('status-indicator');
-    const modelButtons = document.querySelectorAll('.model-btn');
+const chat = document.getElementById('chat');
+const input = document.getElementById('input');
+const send = document.getElementById('send');
+const status = document.getElementById('status');
+const indicator = document.getElementById('indicator');
+const apiKeyInput = document.getElementById('apiKey');
 
-    let currentModel = 'llama-3.3-70b-versatile';
-    let history = [];
+let model = 'llama-3.3-70b-versatile';
+let personality = 'helpful';
 
-    modelButtons.forEach(btn => {
-        btn.onclick = () => {
-            modelButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentModel = btn.dataset.model;
-        };
-    });
+const personalities = {
+  helpful: 'You are a helpful, clear, no-nonsense assistant.',
+  creative: 'You are imaginative, expressive, and think outside the box.',
+  professional: 'You are concise, technical, and strictly professional.',
+  funny: 'You are witty, sarcastic, and humorous but still useful.'
+};
 
-    sendBtn.onclick = sendMessage;
-    input.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
+let history = [
+  { role: 'system', content: personalities[personality] }
+];
 
-    function addMessage(text, who) {
-        const div = document.createElement('div');
-        div.className = `message ${who}-message`;
-        div.innerHTML = `
-            <div class="message-header">${who === 'user' ? 'You' : 'AI'}</div>
-            <div class="message-content">${text}</div>
-        `;
-        chat.appendChild(div);
-        chat.scrollTop = chat.scrollHeight;
-    }
+function addMsg(text, who) {
+  const d = document.createElement('div');
+  d.className = `message ${who}-message`;
+  d.innerHTML = `<div class="message-header">${who === 'user' ? 'You' : 'AI'}</div>${text}`;
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
+}
 
-    async function sendMessage() {
-        const text = input.value.trim();
-        if (!text) return;
-
-        const apiKey = apiKeyInput.value.trim();
-        if (!apiKey) {
-            statusText.textContent = 'Missing API key';
-            return;
-        }
-
-        addMessage(text, 'user');
-        history.push({ role: 'user', content: text });
-        input.value = '';
-
-        statusText.textContent = 'Thinking…';
-        statusIndicator.classList.add('connecting');
-
-        try {
-            const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
-                },
-                body: JSON.stringify({
-                    model: currentModel,
-                    messages: history,
-                    temperature: 0.7,
-                    max_tokens: 1024
-                })
-            });
-
-            const data = await res.json();
-            const reply = data.choices[0].message.content;
-
-            addMessage(reply, 'ai');
-            history.push({ role: 'assistant', content: reply });
-
-            statusText.textContent = 'Ready';
-            statusIndicator.classList.remove('connecting');
-        } catch (err) {
-            addMessage(err.message, 'ai');
-            statusText.textContent = 'Error';
-            statusIndicator.classList.remove('connecting');
-        }
-    }
+document.querySelectorAll('.model-btn').forEach(b=>{
+  b.onclick=()=>{document.querySelectorAll('.model-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');model=b.dataset.model;}
 });
+
+document.querySelectorAll('.personality-btn').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('.personality-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    personality=b.dataset.p;
+    history[0]={role:'system',content:personalities[personality]};
+  };
+});
+
+send.onclick = sendMsg;
+input.onkeydown = e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}};
+
+async function sendMsg(){
+  const text=input.value.trim();
+  if(!text||!apiKeyInput.value)return;
+  addMsg(text,'user');
+  history.push({role:'user',content:text});
+  input.value='';
+  status.textContent='Thinking…';
+  indicator.classList.add('busy');
+
+  const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+    method:'POST',
+    headers:{
+      'Authorization':`Bearer ${apiKeyInput.value}`,
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify({
+      model,
+      messages:history,
+      temperature:0.7,
+      max_tokens:1024
+    })
+  });
+
+  const data=await res.json();
+  const reply=data.choices[0].message.content;
+  addMsg(reply,'ai');
+  history.push({role:'assistant',content:reply});
+  status.textContent='Ready';
+  indicator.classList.remove('busy');
+}
 </script>
 </body>
 </html>
