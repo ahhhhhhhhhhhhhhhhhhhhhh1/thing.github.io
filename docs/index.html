@@ -249,4 +249,93 @@ header {
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    con
+    const chat = document.getElementById('chat-messages');
+    const input = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+    const apiKeyInput = document.getElementById('api-key');
+    const statusText = document.getElementById('status-text');
+    const statusIndicator = document.getElementById('status-indicator');
+    const modelButtons = document.querySelectorAll('.model-btn');
+
+    let currentModel = 'llama-3.3-70b-versatile';
+    let history = [];
+
+    modelButtons.forEach(btn => {
+        btn.onclick = () => {
+            modelButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentModel = btn.dataset.model;
+        };
+    });
+
+    sendBtn.onclick = sendMessage;
+
+    input.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    function addMessage(text, who) {
+        const div = document.createElement('div');
+        div.className = `message ${who}-message`;
+        div.innerHTML = `
+            <div class="message-header">${who === 'user' ? 'You' : 'AI'}</div>
+            <div class="message-content">${text}</div>
+        `;
+        chat.appendChild(div);
+        chat.scrollTop = chat.scrollHeight;
+    }
+
+    async function sendMessage() {
+        const text = input.value.trim();
+        if (!text) return;
+
+        const apiKey = apiKeyInput.value.trim();
+        if (!apiKey) {
+            statusText.textContent = 'Missing API key';
+            return;
+        }
+
+        addMessage(text, 'user');
+        history.push({ role: 'user', content: text });
+        input.value = '';
+
+        statusText.textContent = 'Thinking…';
+        statusIndicator.classList.add('connecting');
+
+        try {
+            const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: currentModel,
+                    messages: history,
+                    temperature: 0.7,
+                    max_tokens: 1024
+                })
+            });
+
+            const data = await res.json();
+            const reply = data.choices[0].message.content;
+
+            addMessage(reply, 'ai');
+            history.push({ role: 'assistant', content: reply });
+
+            statusText.textContent = 'Idle';
+            statusIndicator.classList.remove('connecting');
+
+        } catch (err) {
+            addMessage(err.message, 'ai');
+            statusText.textContent = 'Error';
+            statusIndicator.classList.remove('connecting');
+        }
+    }
+});
+</script>
+</body>
+</html>
