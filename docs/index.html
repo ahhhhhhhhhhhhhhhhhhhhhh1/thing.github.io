@@ -145,7 +145,12 @@ customPrompt.oninput=()=>{
 };
 
 send.onclick=sendMsg;
-input.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey'){e.preventDefault();sendMsg();}};
+input.onkeydown=e=>{
+  if(e.key==='Enter' && !e.shiftKey){
+    e.preventDefault();
+    sendMsg();
+  }
+};
 
 async function sendMsg(){
   const text=input.value.trim();
