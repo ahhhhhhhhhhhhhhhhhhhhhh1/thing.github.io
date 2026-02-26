@@ -304,6 +304,16 @@
             100% { opacity: 1; }
         }
 
+	    .deprecated-notice {
+            background: #fef2f2;
+            color: #b91c1c;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 20px;
+            font-size: 0.9rem;
+            border-left: 4px solid var(--error);
+        }
+
         .history-controls {
             display: flex;
             justify-content: space-between;
@@ -511,7 +521,11 @@
             <div class="api-key-container">
                 <input type="password" class="api-key-input" id="api-key" placeholder="Enter your Groq API key" value="">
             </div>
-        </header>       
+        </header>
+
+	<div class="deprecated-notice">
+        </div>
+       
         <div class="history-controls">
             <button class="history-btn" id="show-history">Show History</button>
             <button class="history-btn" id="clear-history" disabled>Clear History</button>
